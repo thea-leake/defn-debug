@@ -7,13 +7,17 @@
    :fn-env env
    :exec-point "invocation"}))
 
+(defn print-return [name result]
+  (println {:fn-name name
+            :fn-return result
+            :exec-point "return"}))
+
+
 (defmacro defnp [fn-name fn-args  & forms]
   `(defn ~fn-name ~fn-args
      (do
-       (print-invoke ~fn-name ~fn-args ~&env)
+       (print-invoke `~~fn-name ~fn-args ~&env)
        (let [result# (do ~@forms)]
          (do
-           (println {:fn-name ~fn-name
-                     :fn-return result#
-                     :exec-point "return"})
+           (print-return `~~fn-name result#)
            result#)))))
