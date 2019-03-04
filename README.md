@@ -1,10 +1,41 @@
 # defn-debug
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure library that gives an alternative defn that provides toggle-able printing of args and results of functions declared with it.
+In most cases repl driven development would be preferable to find this information, and this should never be used outside of debugging.
+There are some situations where something like this is super handy though, so I made a small library for it.
 
 ## Usage
+defnp currently does not work on [multi arity functions](http://clojure-doc.org/articles/language/functions.html#multi-arity-functions), though it does work with [variadic functions](http://clojure-doc.org/articles/language/functions.html#variadic-functions).
 
-FIXME
+* Define functions with `defnp`, example:
+```
+(defnp grr [a b ] (a b b))
+```
+
+* Ensure that `defn-debug-enabled` is `def`'d and truthy, example:
+```
+(def defn-debug-enabled true)
+```
+If `defn-debug-enabled` is undefined functions defined with `defnp`  will simply not log debug output. 
+
+
+Here is an example of usage.
+``` lisp
+defn-debug.core> (defnp grr [a b ] (a b b))
+#'defn-debug.core/grr
+defn-debug.core> (grr + 1)
+2
+defn-debug.core> (def defn-debug-enabled nil)
+#'defn-debug.core/defn-debug-enabled
+defn-debug.core> (grr + 1)
+2
+defn-debug.core> (def defn-debug-enabled true)
+#'defn-debug.core/defn-debug-enabled
+defn-debug.core> (grr + 1)
+{:fn-name #function[defn-debug.core/grr], :fn-args [#function[clojure.core/+] 1], :defn-env nil, :exec-point invocation}
+{:fn-name #function[defn-debug.core/grr], :fn-return 2, :exec-point return}
+2
+```
 
 ## License
 
