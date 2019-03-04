@@ -9,12 +9,11 @@
       (if (var-get is_enabled?)
         (println message)))))
 
-(defn print-invoke [name args env]
+(defn print-invoke [name args]
   "Prints out map with fn name, args, and env at time of defn.
   Should be called at time of fn invocation."
   (print-if-debug {:fn-name name
                    :fn-args args
-                   :defn-env env
                    :exec-point "invocation"}))
 
 (defn print-return [name result]
@@ -24,12 +23,16 @@
                    :fn-return result
                    :exec-point "return"}))
 
+(defmacro build-arity [fn-name fn-args forms]
+  `(list
+    (do
+      (print-invoke ~fn-name ~fn-args)
+      (let [result# (do ~@forms)]
+        (do
+          (print-return ~fn-name result#)
+          result#)))))
+
 (defmacro defnp [fn-name fn-args  & forms]
   "Creates a fn with debug logging of fn args, and fn return val"
   `(defn ~fn-name ~fn-args
-     (do
-       (print-invoke `~~fn-name ~fn-args ~&env)
-       (let [result# (do ~@forms)]
-         (do
-           (print-return `~~fn-name result#)
-           result#)))))
+     (build-arity `~~fn-name ~fn-args ~forms)))
