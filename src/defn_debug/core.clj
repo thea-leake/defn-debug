@@ -24,10 +24,7 @@
                    :exec-point "return"}))
 
 (defn single-arity? [form]
-  (instance? clojure.lang.PersistentVector form))
-
-(defn multi-arity? [form]
-  (instance? clojure.lang.PersistentList form))
+  (instance? clojure.lang.PersistentVector (first form)))
 
 (defmacro build-arity [fn-name fn-args forms]
   `(list
@@ -41,15 +38,16 @@
 
 (defmacro build-arities [fn-name fn-form]
   `(cond
-    (single-arity? ~fn-form) (build-arity
-                             ~fn-name
-                             (first ~fn-form)
-                             (rest ~fn-form))
-    (multi-arity? ~fn-form) (cons (build-arities ~fn-name ~fn-form)
-                                  (build-arities ~fn-name ~fn-form))
-    :else  '()))
+     (single-arity? ~fn-form) (build-arity
+                               ~fn-name
+                               (first ~fn-form)
+                               (rest ~fn-form))
+     (nil? ~fn-form) (cons
+                      (build-arities ~fn-name (first ~fn-form))
+                      (build-arities ~fn-name (rest ~fn-form)))
+     :else  '()))
 
 (defmacro defnp [fn-name & fn-forms]
   "Creates a fn with debug logging of fn args, and fn return val"
   `(let [fn-arities# (build-arities `~~fn-name ~fn-forms)]
-     (concat (defn ~fn-name) fn-arities#)))
+     (into fn-arities# defn ~fn-name )))
